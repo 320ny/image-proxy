@@ -17,10 +17,8 @@ var express = require('express')
     'image/jpg',
   ];
 
-app.get('/:url/:width/:height', function (req, res, next) {
-  var width = req.params.width
-    , height = req.params.height
-    , retrieve = function (remote) {
+app.get('/:url/', function (req, res, next) {
+  var retrieve = function (remote) {
       // @see http://nodejs.org/api/url.html#url_url
       var parts = url.parse(remote);
       if (['https:', 'http:'].indexOf(parts.protocol) === -1) {
@@ -53,9 +51,6 @@ app.get('/:url/:width/:height', function (req, res, next) {
           // @see https://github.com/aheckmann/gm#constructor
           imageMagick(res2, 'image.' + mime.extension(mimeType))
           // @see http://www.imagemagick.org/Usage/thumbnails/#cut
-          .resize(width, height + '^>')
-          .gravity('Center') // faces are most often near the center
-          .extent(width, height)
           .stream(function (err, stdout, stderr) {
             if (err) return next(err);
             // Log errors in production.
@@ -89,18 +84,7 @@ app.get('/:url/:width/:height', function (req, res, next) {
       return res.send('Expected URI host to be whitelisted', 404);
     }
   }
-  if (isNaN(parseInt(width))) {
-    return res.send('Expected width to be an integer', 404);
-  }
-  if (parseInt(width) > 1000) {
-    return res.send('Expected width to be less than or equal to 1000', 404);
-  }
-  if (isNaN(parseInt(height))) {
-    return res.send('Expected height to be an integer', 404);
-  }
-  if (parseInt(height) > 1000) {
-    return res.send('Expected height to be less than or equal to 1000', 404);
-  }
+
 
   retrieve(req.params.url);
 });
